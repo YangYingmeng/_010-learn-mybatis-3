@@ -25,12 +25,20 @@ import org.apache.ibatis.reflection.Reflector;
  */
 public class MethodInvoker implements Invoker {
 
+  /**
+   * 类型
+   */
   private final Class<?> type;
+  /**
+   * 指定方法
+   */
   private final Method method;
 
   public MethodInvoker(Method method) {
     this.method = method;
-
+    // 参数大小为1 一般是setter方法,
+    // setter方法一般会有参数设置属性的值 public void setName(String name)
+    // getter方法一般都是返回属性的值 String getName()
     if (method.getParameterTypes().length == 1) {
       type = method.getParameterTypes()[0];
     } else {
@@ -38,6 +46,9 @@ public class MethodInvoker implements Invoker {
     }
   }
 
+  /**
+   * 执行指定的方法
+   */
   @Override
   public Object invoke(Object target, Object[] args) throws IllegalAccessException, InvocationTargetException {
     try {

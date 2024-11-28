@@ -31,32 +31,43 @@ import org.apache.ibatis.reflection.property.PropertyTokenizer;
  */
 public class BeanWrapper extends BaseWrapper {
 
+  /**
+   * 普通对象
+   */
   private final Object object;
   private final MetaClass metaClass;
 
   public BeanWrapper(MetaObject metaObject, Object object) {
     super(metaObject);
     this.object = object;
+    // 创建MetaClass对象
     this.metaClass = MetaClass.forClass(object.getClass(), metaObject.getReflectorFactory());
   }
 
   @Override
   public Object get(PropertyTokenizer prop) {
+    // 如果还有子列
     if (prop.hasNext()) {
       return getChildValue(prop);
+      // 获得集合类型的属性的指定位置的值
     } else if (prop.getIndex() != null) {
+      // 获得指定位置的值
       return getCollectionValue(prop, resolveCollection(prop, object));
     } else {
+      // 获得属性的值
       return getBeanProperty(prop, object);
     }
   }
 
   @Override
   public void set(PropertyTokenizer prop, Object value) {
+    // 还有子列需要设置值
     if (prop.hasNext()) {
       setChildValue(prop, value);
+      // 获得集合类型的属性
     } else if (prop.getIndex() != null) {
       setCollectionValue(prop, resolveCollection(prop, object), value);
+      // 设置属性的值
     } else {
       setBeanProperty(prop, object, value);
     }
