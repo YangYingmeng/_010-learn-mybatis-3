@@ -24,8 +24,17 @@ import org.apache.ibatis.cache.Cache;
  */
 public class ScheduledCache implements Cache {
 
+  /**
+   * 被装饰的 Cache 对象
+   */
   private final Cache delegate;
+  /**
+   * 清空间隔，单位：毫秒
+   */
   protected long clearInterval;
+  /**
+   * 最后清空时间，单位：毫秒
+   */
   protected long lastClear;
 
   public ScheduledCache(Cache delegate) {
@@ -45,6 +54,7 @@ public class ScheduledCache implements Cache {
 
   @Override
   public int getSize() {
+    // 判断是否要全部清空
     clearWhenStale();
     return delegate.getSize();
   }
@@ -68,7 +78,9 @@ public class ScheduledCache implements Cache {
 
   @Override
   public void clear() {
+    // 记录清空时间
     lastClear = System.currentTimeMillis();
+    // 全部清空
     delegate.clear();
   }
 
@@ -82,7 +94,11 @@ public class ScheduledCache implements Cache {
     return delegate.equals(obj);
   }
 
+  /**
+   * 每次缓存时, 都需要判断缓存中是否有需要清除对象
+   */
   private boolean clearWhenStale() {
+    // 需要全部清空则清空
     if (System.currentTimeMillis() - lastClear > clearInterval) {
       clear();
       return true;

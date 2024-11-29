@@ -24,7 +24,13 @@ import org.apache.ibatis.cache.Cache;
  */
 public class SynchronizedCache implements Cache {
 
+  /**
+   * 可重入锁
+   */
   private final ReentrantLock lock = new ReentrantLock();
+  /**
+   * 装饰的 Cache 对象
+   */
   private final Cache delegate;
 
   public SynchronizedCache(Cache delegate) {
@@ -38,6 +44,7 @@ public class SynchronizedCache implements Cache {
 
   @Override
   public int getSize() {
+    // 同步
     lock.lock();
     try {
       return delegate.getSize();
@@ -48,6 +55,7 @@ public class SynchronizedCache implements Cache {
 
   @Override
   public void putObject(Object key, Object object) {
+    // 同步
     lock.lock();
     try {
       delegate.putObject(key, object);
@@ -58,6 +66,7 @@ public class SynchronizedCache implements Cache {
 
   @Override
   public Object getObject(Object key) {
+    // 同步
     lock.lock();
     try {
       return delegate.getObject(key);
@@ -68,6 +77,7 @@ public class SynchronizedCache implements Cache {
 
   @Override
   public Object removeObject(Object key) {
+    // 同步
     lock.lock();
     try {
       return delegate.removeObject(key);

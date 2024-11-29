@@ -34,6 +34,9 @@ import org.apache.ibatis.io.SerialFilterChecker;
  */
 public class SerializedCache implements Cache {
 
+  /**
+   * 装饰对象
+   */
   private final Cache delegate;
 
   public SerializedCache(Cache delegate) {
@@ -55,12 +58,14 @@ public class SerializedCache implements Cache {
     if ((object != null) && !(object instanceof Serializable)) {
       throw new CacheException("SharedCache failed to make a copy of a non-serializable object: " + object);
     }
+    // 序列化
     delegate.putObject(key, serialize((Serializable) object));
   }
 
   @Override
   public Object getObject(Object key) {
     Object object = delegate.getObject(key);
+    // 反序列化
     return object == null ? null : deserialize((byte[]) object);
   }
 

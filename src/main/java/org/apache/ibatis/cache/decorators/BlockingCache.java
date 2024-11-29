@@ -36,8 +36,17 @@ import org.apache.ibatis.cache.CacheException;
  */
 public class BlockingCache implements Cache {
 
+  /**
+   * 阻塞等待超时时间
+   */
   private long timeout;
+  /**
+   * 装饰的 Cache 对象
+   */
   private final Cache delegate;
+  /**
+   * 缓存键与 CountDownLatch 对象的映射
+   */
   private final ConcurrentHashMap<Object, CountDownLatch> locks;
 
   public BlockingCache(Cache delegate) {
@@ -58,16 +67,21 @@ public class BlockingCache implements Cache {
   @Override
   public void putObject(Object key, Object value) {
     try {
+      // 添加缓存
       delegate.putObject(key, value);
     } finally {
+      // 释放锁
       releaseLock(key);
     }
   }
 
   @Override
   public Object getObject(Object key) {
+    // 获得锁
     acquireLock(key);
+    // 获得缓存值
     Object value = delegate.getObject(key);
+    // 释放锁
     if (value != null) {
       releaseLock(key);
     }
@@ -77,6 +91,7 @@ public class BlockingCache implements Cache {
   @Override
   public Object removeObject(Object key) {
     // despite its name, this method is called only to release locks
+    // 释放锁
     releaseLock(key);
     return null;
   }
@@ -87,20 +102,25 @@ public class BlockingCache implements Cache {
   }
 
   private void acquireLock(Object key) {
+    // 使用当前线程尝试获取锁时创建 计数器, 初始值为1
     CountDownLatch newLatch = new CountDownLatch(1);
     while (true) {
+      // 每一个key相当于1把逻辑锁
       CountDownLatch latch = locks.putIfAbsent(key, newLatch);
       if (latch == null) {
+        // 成功获取锁 退出循环
         break;
       }
       try {
         if (timeout > 0) {
+          // 对该key加锁, 如果设置了超时时间, 在超时时间内为获取到锁, 抛出异常
           boolean acquired = latch.await(timeout, TimeUnit.MILLISECONDS);
           if (!acquired) {
             throw new CacheException(
                 "Couldn't get a lock in " + timeout + " for the key " + key + " at the cache " + delegate.getId());
           }
         } else {
+          // 如果未设置超时时间, 无限等待
           latch.await();
         }
       } catch (InterruptedException e) {
@@ -110,6 +130,7 @@ public class BlockingCache implements Cache {
   }
 
   private void releaseLock(Object key) {
+    // 根据key释放锁
     CountDownLatch latch = locks.remove(key);
     if (latch == null) {
       throw new IllegalStateException("Detected an attempt at releasing unacquired lock. This should never happen.");
