@@ -25,6 +25,9 @@ import java.sql.SQLException;
  */
 public class EnumTypeHandler<E extends Enum<E>> extends BaseTypeHandler<E> {
 
+  /**
+   * 枚举类
+   */
   private final Class<E> type;
 
   public EnumTypeHandler(Class<E> type) {
@@ -36,6 +39,7 @@ public class EnumTypeHandler<E extends Enum<E>> extends BaseTypeHandler<E> {
 
   @Override
   public void setNonNullParameter(PreparedStatement ps, int i, E parameter, JdbcType jdbcType) throws SQLException {
+    //  Enum -> String, 如果没有指定jdbcType则用枚举名称替代, 如果指定增加枚举类型使用setObject()方法
     if (jdbcType == null) {
       ps.setString(i, parameter.name());
     } else {
@@ -45,19 +49,25 @@ public class EnumTypeHandler<E extends Enum<E>> extends BaseTypeHandler<E> {
 
   @Override
   public E getNullableResult(ResultSet rs, String columnName) throws SQLException {
+    // 获得 String 值
     String s = rs.getString(columnName);
+    // String值 转为 Enum
     return s == null ? null : Enum.valueOf(type, s);
   }
 
   @Override
   public E getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
+    // 获得 String 值
     String s = rs.getString(columnIndex);
+    // String值 转为 Enum
     return s == null ? null : Enum.valueOf(type, s);
   }
 
   @Override
   public E getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
+    // 获得 String 值
     String s = cs.getString(columnIndex);
+    // String值 转为 Enum
     return s == null ? null : Enum.valueOf(type, s);
   }
 }

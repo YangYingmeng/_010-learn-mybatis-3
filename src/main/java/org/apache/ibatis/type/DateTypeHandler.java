@@ -29,21 +29,25 @@ public class DateTypeHandler extends BaseTypeHandler<Date> {
 
   @Override
   public void setNonNullParameter(PreparedStatement ps, int i, Date parameter, JdbcType jdbcType) throws SQLException {
+    // Date -> Timestamp, 设置到ps中
     ps.setTimestamp(i, new Timestamp(parameter.getTime()));
   }
 
   @Override
   public Date getNullableResult(ResultSet rs, String columnName) throws SQLException {
+    // Timestamp -> Date
     return toDate(rs.getTimestamp(columnName));
   }
 
   @Override
   public Date getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
+    // Timestamp -> Date
     return toDate(rs.getTimestamp(columnIndex));
   }
 
   @Override
   public Date getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
+    // Timestamp -> Date
     return toDate(cs.getTimestamp(columnIndex));
   }
 

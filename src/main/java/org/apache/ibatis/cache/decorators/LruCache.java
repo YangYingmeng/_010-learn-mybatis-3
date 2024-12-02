@@ -41,6 +41,7 @@ public class LruCache implements Cache {
 
   public LruCache(Cache delegate) {
     this.delegate = delegate;
+    // 初始化keyMap对象
     setSize(1024);
   }
 
@@ -74,13 +75,17 @@ public class LruCache implements Cache {
 
   @Override
   public void putObject(Object key, Object value) {
+    // 添加到缓存
     delegate.putObject(key, value);
+    // 循环keyMao
     cycleKeyList(key);
   }
 
   @Override
   public Object getObject(Object key) {
+    // 刷新keyMap的访问顺序
     keyMap.get(key); // touch
+    // 获得缓存值
     return delegate.getObject(key);
   }
 
@@ -97,7 +102,9 @@ public class LruCache implements Cache {
   }
 
   private void cycleKeyList(Object key) {
+    // 添加到keyMap中
     keyMap.put(key, key);
+    // 如果超出上限, 则移除
     if (eldestKey != null) {
       delegate.removeObject(eldestKey);
       eldestKey = null;

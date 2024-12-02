@@ -28,25 +28,30 @@ public class DateOnlyTypeHandler extends BaseTypeHandler<Date> {
 
   @Override
   public void setNonNullParameter(PreparedStatement ps, int i, Date parameter, JdbcType jdbcType) throws SQLException {
+    // java Date -> sql Date
     ps.setDate(i, new java.sql.Date(parameter.getTime()));
   }
 
   @Override
   public Date getNullableResult(ResultSet rs, String columnName) throws SQLException {
+    // sql Date -> java Date
     return toSqlDate(rs.getDate(columnName));
   }
 
   @Override
   public Date getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
+    // sql Date -> java Date
     return toSqlDate(rs.getDate(columnIndex));
   }
 
   @Override
   public Date getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
+    // sql Date -> java Date
     return toSqlDate(cs.getDate(columnIndex));
   }
 
   private java.sql.Date toSqlDate(Date date) {
+    // sql Date -> java Date
     return date == null ? null : new java.sql.Date(date.getTime());
   }
 

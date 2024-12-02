@@ -31,9 +31,21 @@ import org.apache.ibatis.cache.Cache;
  * @author Clinton Begin
  */
 public class SoftCache implements Cache {
+  /**
+   * 强引用的键的队列
+   */
   private final Deque<Object> hardLinksToAvoidGarbageCollection;
+  /**
+   * 被 GC 回收的 WeakEntry 集合, 当软引用被回收时, 会将回收对象加入队列, 方便判断哪些对象被回收或者维护缓存的一致性
+   */
   private final ReferenceQueue<Object> queueOfGarbageCollectedEntries;
+  /**
+   * 装饰的cache
+   */
   private final Cache delegate;
+  /**
+   * {@link #hardLinksToAvoidGarbageCollection} 的大小
+   */
   private int numberOfHardLinks;
   private final ReentrantLock lock = new ReentrantLock();
 
@@ -61,6 +73,7 @@ public class SoftCache implements Cache {
 
   @Override
   public void putObject(Object key, Object value) {
+    // 移除已经被 GC 回收的 SoftEntry
     removeGarbageCollectedItems();
     delegate.putObject(key, new SoftEntry(key, value, queueOfGarbageCollectedEntries));
   }
@@ -69,9 +82,12 @@ public class SoftCache implements Cache {
   public Object getObject(Object key) {
     Object result = null;
     @SuppressWarnings("unchecked") // assumed delegate cache is totally managed by this cache
+    // 获得值的 WeakReference 对象
     SoftReference<Object> softReference = (SoftReference<Object>) delegate.getObject(key);
     if (softReference != null) {
+      // 获得值
       result = softReference.get();
+      // 为 null, 意味着已经被GC清除, 从delegate中删除
       if (result == null) {
         delegate.removeObject(key);
       } else {
@@ -106,11 +122,13 @@ public class SoftCache implements Cache {
     } finally {
       lock.unlock();
     }
+    // 移除已经被gc回收的对象
     removeGarbageCollectedItems();
     delegate.clear();
   }
 
   private void removeGarbageCollectedItems() {
+    // 通过垃圾回收队列 保证缓存和回收对象的一致性
     SoftEntry sv;
     while ((sv = (SoftEntry) queueOfGarbageCollectedEntries.poll()) != null) {
       delegate.removeObject(sv.key);

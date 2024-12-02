@@ -32,6 +32,9 @@ import org.apache.ibatis.session.Configuration;
  */
 public class UnknownTypeHandler extends BaseTypeHandler<Object> {
 
+  /**
+   * 单例
+   */
   private static final ObjectTypeHandler OBJECT_TYPE_HANDLER = new ObjectTypeHandler();
   // TODO Rename to 'configuration' after removing the 'configuration' property(deprecated property) on parent class
   private final Configuration config;

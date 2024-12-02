@@ -42,13 +42,13 @@ public @interface MappedJdbcTypes {
   /**
    * Returns jdbc types to map {@link TypeHandler}.
    *
-   * @return jdbc types
+   * @return jdbc types 匹配的 JDBC Type 类型的注解
    */
   JdbcType[] value();
 
   /**
    * Returns whether map to jdbc null type.
-   *
+   * 是否包含 {@link java.sql.JDBCType#NULL}
    * @return {@code true} if map, {@code false} if otherwise
    */
   boolean includeNullJdbcType() default false;
