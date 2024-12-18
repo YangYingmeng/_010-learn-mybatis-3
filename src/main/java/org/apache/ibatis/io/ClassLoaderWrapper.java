@@ -25,7 +25,14 @@ import java.net.URL;
  */
 public class ClassLoaderWrapper {
 
+  /**
+   * 默认 ClassLoader 对象,
+   * 可通过ClassLoaderWrapper.defaultClassLoader = xxx 的方式初始化
+   */
   ClassLoader defaultClassLoader;
+  /**
+   * 系统 ClassLoader 对象, 由构造方法初始化
+   */
   ClassLoader systemClassLoader;
 
   ClassLoaderWrapper() {
@@ -131,17 +138,20 @@ public class ClassLoaderWrapper {
    * @return the resource or null
    */
   InputStream getResourceAsStream(String resource, ClassLoader[] classLoader) {
+    // 遍历 classLoader 数组
     for (ClassLoader cl : classLoader) {
       if (null != cl) {
 
         // try to find the resource as passed
+        // 获得不带 / 的InputStream
         InputStream returnValue = cl.getResourceAsStream(resource);
 
         // now, some class loaders want this leading "/", so we'll add it and try again if we didn't find the resource
+        // 获得带 / 的InputStream
         if (null == returnValue) {
           returnValue = cl.getResourceAsStream("/" + resource);
         }
-
+        // 返回结果
         if (null != returnValue) {
           return returnValue;
         }
@@ -163,14 +173,14 @@ public class ClassLoaderWrapper {
   URL getResourceAsURL(String resource, ClassLoader[] classLoader) {
 
     URL url;
-
+    // 遍历classLoader数组
     for (ClassLoader cl : classLoader) {
 
       if (null != cl) {
-
+        // 获得不带 / 的 URL
         // look for the resource as passed in...
         url = cl.getResource(resource);
-
+        // 获得带 / 的 URL
         // ...but some class loaders want this leading "/", so we'll add it
         // and try again if we didn't find the resource
         if (null == url) {
@@ -207,12 +217,13 @@ public class ClassLoaderWrapper {
    */
   Class<?> classForName(String name, ClassLoader[] classLoader) throws ClassNotFoundException {
 
+    // 遍历 classLoader 数组
     for (ClassLoader cl : classLoader) {
 
       if (null != cl) {
 
         try {
-
+          // 知道有一成功类找到, 返回
           return Class.forName(name, true, cl);
 
         } catch (ClassNotFoundException e) {

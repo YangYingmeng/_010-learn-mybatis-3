@@ -86,6 +86,9 @@ public class ResolverUtil<T> {
    */
   public static class IsA implements Test {
 
+    /**
+     * 指定类
+     */
     /** The parent. */
     private final Class<?> parent;
 
@@ -143,6 +146,7 @@ public class ResolverUtil<T> {
   }
 
   /** The set of matches being accumulated. */
+  // 符合条件的类的集合
   private Set<Class<? extends T>> matches = new HashSet<>();
 
   /**
@@ -244,12 +248,17 @@ public class ResolverUtil<T> {
    * @return the resolver util
    */
   public ResolverUtil<T> find(Test test, String packageName) {
+    // 获取包路径
     String path = getPackagePath(packageName);
 
     try {
+      // 获取包下的所有路径
       List<String> children = VFS.getInstance().list(path);
+      // 遍历
       for (String child : children) {
+        // 如果是Class对象
         if (child.endsWith(".class")) {
+          // 将匹配的值添加到结果集
           addIfMatching(test, child);
         }
       }
@@ -285,13 +294,15 @@ public class ResolverUtil<T> {
   @SuppressWarnings("unchecked")
   protected void addIfMatching(Test test, String fqn) {
     try {
+      // 获得全类名
       String externalName = fqn.substring(0, fqn.indexOf('.')).replace('/', '.');
       ClassLoader loader = getClassLoader();
       if (log.isDebugEnabled()) {
         log.debug("Checking to see if class " + externalName + " matches criteria [" + test + "]");
       }
-
+      // 加载类
       Class<?> type = loader.loadClass(externalName);
+      // 判断匹配, 使用对应的test匹配
       if (test.matches(type)) {
         matches.add((Class<T>) type);
       }
