@@ -33,7 +33,13 @@ import org.apache.ibatis.session.SqlSession;
  */
 public class MapperRegistry {
 
+  /**
+   * MyBatis Configuration 对象
+   */
   private final Configuration config;
+  /**
+   * MapperProxyFactory 映射
+   */
   private final Map<Class<?>, MapperProxyFactory<?>> knownMappers = new ConcurrentHashMap<>();
 
   public MapperRegistry(Configuration config) {
@@ -58,20 +64,26 @@ public class MapperRegistry {
   }
 
   public <T> void addMapper(Class<T> type) {
+    // 接口
     if (type.isInterface()) {
+      // 未添加过
       if (hasMapper(type)) {
         throw new BindingException("Type " + type + " is already known to the MapperRegistry.");
       }
       boolean loadCompleted = false;
       try {
+        // 添加到 knownMappers 中
         knownMappers.put(type, new MapperProxyFactory<>(type));
         // It's important that the type is added before the parser is run
         // otherwise the binding may automatically be attempted by the
         // mapper parser. If the type is already known, it won't try.
+        // 解析 Mapper 的注解位置
         MapperAnnotationBuilder parser = new MapperAnnotationBuilder(config, type);
         parser.parse();
+        // 加载完成
         loadCompleted = true;
       } finally {
+        // 未加载完成 移除
         if (!loadCompleted) {
           knownMappers.remove(type);
         }
@@ -101,9 +113,11 @@ public class MapperRegistry {
    * @since 3.2.2
    */
   public void addMappers(String packageName, Class<?> superType) {
+    // 扫描指定包下的指定类, 参考IO模块
     ResolverUtil<Class<?>> resolverUtil = new ResolverUtil<>();
     resolverUtil.find(new ResolverUtil.IsA(superType), packageName);
     Set<Class<? extends Class<?>>> mapperSet = resolverUtil.getClasses();
+    // 遍历添加到 knownMappers 中
     for (Class<?> mapperClass : mapperSet) {
       addMapper(mapperClass);
     }

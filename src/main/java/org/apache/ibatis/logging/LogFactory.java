@@ -30,9 +30,21 @@ public final class LogFactory {
   public static final String MARKER = "MYBATIS";
 
   private static final ReentrantLock lock = new ReentrantLock();
+  /**
+   * 使用的 Log 的构造方法
+   */
   private static Constructor<? extends Log> logConstructor;
 
   static {
+    // 逐个尝试使用哪个实现类. 初始化logConstructor, 此处lambda
+    /**
+     * tryImplementation(new Runnable() {
+     *     @Override
+     *     public void run() {
+     *         LogFactory.useSlf4jLogging();
+     *     }
+     * });
+     */
     tryImplementation(LogFactory::useSlf4jLogging);
     tryImplementation(LogFactory::useCommonsLogging);
     tryImplementation(LogFactory::useLog4J2Logging);
@@ -106,7 +118,9 @@ public final class LogFactory {
   private static void setImplementation(Class<? extends Log> implClass) {
     lock.lock();
     try {
+      // 获得参数为 String 的构造方法
       Constructor<? extends Log> candidate = implClass.getConstructor(String.class);
+      // 创建Log对象 创建成功则赋值给 logConstructor
       Log log = candidate.newInstance(LogFactory.class.getName());
       if (log.isDebugEnabled()) {
         log.debug("Logging initialized using '" + implClass + "' adapter.");

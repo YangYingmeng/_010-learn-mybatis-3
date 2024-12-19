@@ -41,8 +41,17 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
       | MethodHandles.Lookup.PACKAGE | MethodHandles.Lookup.PUBLIC;
   private static final Constructor<Lookup> lookupConstructor;
   private static final Method privateLookupInMethod;
+  /**
+   * SqlSession 对象
+   */
   private final SqlSession sqlSession;
+  /**
+   * Mapper 接口
+   */
   private final Class<T> mapperInterface;
+  /**
+   * 方法与 MapperMethod 的映射
+   */
   private final Map<Method, MapperMethodInvoker> methodCache;
 
   public MapperProxy(SqlSession sqlSession, Class<T> mapperInterface, Map<Method, MapperMethodInvoker> methodCache) {
@@ -80,6 +89,7 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     try {
+      // 如果是 Object 定义的方法, 直接调用
       if (Object.class.equals(method.getDeclaringClass())) {
         return method.invoke(this, args);
       }
@@ -92,6 +102,7 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
   private MapperMethodInvoker cachedInvoker(Method method) throws Throwable {
     try {
       return MapUtil.computeIfAbsent(methodCache, method, m -> {
+
         if (!m.isDefault()) {
           return new PlainMethodInvoker(new MapperMethod(mapperInterface, method, sqlSession.getConfiguration()));
         }
