@@ -247,6 +247,7 @@ public class Configuration {
   public void setVfsImpl(Class<? extends VFS> vfsImpl) {
     if (vfsImpl != null) {
       this.vfsImpl = vfsImpl;
+      // 添加到 VFS 类的集合中
       VFS.addImplClass(this.vfsImpl);
     }
   }
@@ -385,6 +386,9 @@ public class Configuration {
     loadedResources.add(resource);
   }
 
+  /**
+   * 判断资源是否已经加载过
+   */
   public boolean isResourceLoaded(String resource) {
     return loadedResources.contains(resource);
   }
@@ -962,6 +966,10 @@ public class Configuration {
     return mappedStatements.containsKey(statementName);
   }
 
+  /**
+   * 当前正在解析的映射文件所在的命名空间
+   * 缓存引用的命名空间
+   */
   public void addCacheRef(String namespace, String referencedNamespace) {
     cacheRefMap.put(namespace, referencedNamespace);
   }
@@ -997,11 +1005,13 @@ public class Configuration {
   }
 
   public void parsePendingStatements(boolean reportUnresolved) {
+    // 获得 XMLStatementBuilder 集合，并遍历进行处理
     if (incompleteStatements.isEmpty()) {
       return;
     }
     incompleteStatementsLock.lock();
     try {
+      // 执行解析, 解析完成后移除
       incompleteStatements.removeIf(x -> {
         x.parseStatementNode();
         return true;
@@ -1016,11 +1026,13 @@ public class Configuration {
   }
 
   public void parsePendingCacheRefs(boolean reportUnresolved) {
+    // 获得 CacheRefResolver 集合，并遍历进行处理
     if (incompleteCacheRefs.isEmpty()) {
       return;
     }
     incompleteCacheRefsLock.lock();
     try {
+      // 遍历解析, 解析后移除
       incompleteCacheRefs.removeIf(x -> x.resolveCacheRef() != null);
     } catch (IncompleteElementException e) {
       if (reportUnresolved) {
@@ -1040,12 +1052,16 @@ public class Configuration {
       boolean resolved;
       IncompleteElementException ex = null;
       do {
+        // 获取 ResultMap 集合, 遍历
         resolved = false;
         Iterator<ResultMapResolver> iterator = incompleteResultMaps.iterator();
         while (iterator.hasNext()) {
           try {
+            // 执行解析
             iterator.next().resolve();
+            // 移除
             iterator.remove();
+            // 标记已解析
             resolved = true;
           } catch (IncompleteElementException e) {
             ex = e;
@@ -1054,6 +1070,7 @@ public class Configuration {
       } while (resolved);
       if (reportUnresolved && !incompleteResultMaps.isEmpty() && ex != null) {
         // At least one result map is unresolvable.
+        // 捕获异常
         throw ex;
       }
     } finally {

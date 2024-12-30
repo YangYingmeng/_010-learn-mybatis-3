@@ -54,9 +54,21 @@ import org.apache.ibatis.type.TypeHandler;
  */
 public class MapperBuilderAssistant extends BaseBuilder {
 
+  /**
+   * 当前Mapper命名空间
+   */
   private String currentNamespace;
+  /**
+   * 资源引用地址
+   */
   private final String resource;
+  /**
+   * 当前cache对象
+   */
   private Cache currentCache;
+  /**
+   * 是否未解析成功 Cache 引用
+   */
   private boolean unresolvedCacheRef; // issue #676
 
   public MapperBuilderAssistant(Configuration configuration, String resource) {
@@ -73,12 +85,12 @@ public class MapperBuilderAssistant extends BaseBuilder {
     if (currentNamespace == null) {
       throw new BuilderException("The mapper element requires a namespace attribute to be specified.");
     }
-
+    // 传入的和当前设置的namespace一致
     if (this.currentNamespace != null && !this.currentNamespace.equals(currentNamespace)) {
       throw new BuilderException(
           "Wrong namespace. Expected '" + this.currentNamespace + "' but found '" + currentNamespace + "'.");
     }
-
+    // 设置
     this.currentNamespace = currentNamespace;
   }
 
@@ -109,11 +121,14 @@ public class MapperBuilderAssistant extends BaseBuilder {
     }
     try {
       unresolvedCacheRef = true;
+      // 获得cache对象
       Cache cache = configuration.getCache(namespace);
       if (cache == null) {
         throw new IncompleteElementException("No cache for namespace '" + namespace + "' could be found.");
       }
+      // 记录当前Cache对象
       currentCache = cache;
+      // 标记已解决
       unresolvedCacheRef = false;
       return cache;
     } catch (IllegalArgumentException e) {

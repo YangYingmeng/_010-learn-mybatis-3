@@ -22,6 +22,9 @@ import org.apache.ibatis.cache.Cache;
  */
 public class CacheRefResolver {
   private final MapperBuilderAssistant assistant;
+  /**
+   * Cache 指向的命名空间
+   */
   private final String cacheRefNamespace;
 
   public CacheRefResolver(MapperBuilderAssistant assistant, String cacheRefNamespace) {
@@ -30,6 +33,7 @@ public class CacheRefResolver {
   }
 
   public Cache resolveCacheRef() {
+    // 根据命名空间获取指向的Cache对象
     return assistant.useCacheRef(cacheRefNamespace);
   }
 }

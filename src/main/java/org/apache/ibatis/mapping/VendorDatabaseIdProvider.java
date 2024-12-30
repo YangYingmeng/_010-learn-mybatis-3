@@ -34,6 +34,9 @@ import org.apache.ibatis.builder.BuilderException;
  */
 public class VendorDatabaseIdProvider implements DatabaseIdProvider {
 
+  /**
+   * Properties 对象
+   */
   private Properties properties;
 
   @Override
@@ -42,6 +45,7 @@ public class VendorDatabaseIdProvider implements DatabaseIdProvider {
       throw new NullPointerException("dataSource cannot be null");
     }
     try {
+      // 获取数据库标识
       return getDatabaseName(dataSource);
     } catch (SQLException e) {
       throw new BuilderException("Error occurred when getting DB product name.", e);
@@ -54,10 +58,12 @@ public class VendorDatabaseIdProvider implements DatabaseIdProvider {
   }
 
   private String getDatabaseName(DataSource dataSource) throws SQLException {
+    // 获得数据库产品名
     String productName = getDatabaseProductName(dataSource);
     if (properties == null || properties.isEmpty()) {
       return productName;
     }
+    // 如果产品名包含KEY, 则返回对应的 VALUE
     return properties.entrySet().stream().filter(entry -> productName.contains((String) entry.getKey()))
         .map(entry -> (String) entry.getValue()).findFirst().orElse(null);
   }

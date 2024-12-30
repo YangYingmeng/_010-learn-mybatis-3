@@ -266,6 +266,9 @@ public class XNode {
     return children;
   }
 
+  /**
+   * 循环标签并复制
+   */
   public Properties getChildrenAsProperties() {
     Properties properties = new Properties();
     for (XNode child : getChildren()) {

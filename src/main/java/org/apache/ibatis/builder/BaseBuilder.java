@@ -32,6 +32,9 @@ import org.apache.ibatis.type.TypeHandlerRegistry;
  * @author Clinton Begin
  */
 public abstract class BaseBuilder {
+  /**
+   * XML 和 注解中的配置, 最终都会映射到 Configuration中
+   */
   protected final Configuration configuration;
   protected final TypeAliasRegistry typeAliasRegistry;
   protected final TypeHandlerRegistry typeHandlerRegistry;
@@ -46,6 +49,12 @@ public abstract class BaseBuilder {
     return configuration;
   }
 
+  /**
+   * 创建正则表达式
+   * @param regex
+   * @param defaultValue
+   * @return
+   */
   protected Pattern parseExpression(String regex, String defaultValue) {
     return Pattern.compile(regex == null ? defaultValue : regex);
   }
@@ -65,6 +74,7 @@ public abstract class BaseBuilder {
 
   protected JdbcType resolveJdbcType(String alias) {
     try {
+      // JdbcType 对 SQL包的Types 进行了封装
       return alias == null ? null : JdbcType.valueOf(alias);
     } catch (IllegalArgumentException e) {
       throw new BuilderException("Error resolving JdbcType. Cause: " + e, e);
@@ -73,6 +83,7 @@ public abstract class BaseBuilder {
 
   protected ResultSetType resolveResultSetType(String alias) {
     try {
+      // ResultSetType 对 SQL包的ResultSet 进行了封装
       return alias == null ? null : ResultSetType.valueOf(alias);
     } catch (IllegalArgumentException e) {
       throw new BuilderException("Error resolving ResultSetType. Cause: " + e, e);
@@ -87,7 +98,15 @@ public abstract class BaseBuilder {
     }
   }
 
+  /**
+   * 比如:
+   * <typeAliases>
+   *   <typeAlias alias="user" type="com.example.User"/>
+   * </typeAliases>
+   * 就可以通过: createInstance(user) 的方式创建User实例, 最终是通过类全名➕反射
+   */
   protected Object createInstance(String alias) {
+    // 获得对应的类型
     Class<?> clazz = resolveClass(alias);
     try {
       return clazz == null ? null : clazz.getDeclaredConstructor().newInstance();
@@ -118,6 +137,12 @@ public abstract class BaseBuilder {
     return resolveTypeHandler(javaType, typeHandlerType);
   }
 
+  /**
+   *   配置全局的 TypeHandler
+   *   <typeHandlers>
+   *     <typeHandler handler="com.example.MyCustomTypeHandler"/>
+   *   </typeHandlers>
+   */
   protected TypeHandler<?> resolveTypeHandler(Class<?> javaType, Class<? extends TypeHandler<?>> typeHandlerType) {
     if (typeHandlerType == null) {
       return null;
