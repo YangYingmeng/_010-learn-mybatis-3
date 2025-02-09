@@ -38,7 +38,7 @@ public class MapperRegistry {
    */
   private final Configuration config;
   /**
-   * MapperProxyFactory 映射
+   * Mapper class对象和 MapperProxyFactory 关系的映射
    */
   private final Map<Class<?>, MapperProxyFactory<?>> knownMappers = new ConcurrentHashMap<>();
 
@@ -46,8 +46,12 @@ public class MapperRegistry {
     this.config = config;
   }
 
+  /**
+   * 根据 Mapper 接口的 class 对象获取 MapperProxy 对象
+   */
   @SuppressWarnings("unchecked")
   public <T> T getMapper(Class<T> type, SqlSession sqlSession) {
+    // 根据 class 对象获取 MapperProxy 对象
     final MapperProxyFactory<T> mapperProxyFactory = (MapperProxyFactory<T>) knownMappers.get(type);
     if (mapperProxyFactory == null) {
       throw new BindingException("Type " + type + " is not known to the MapperRegistry.");
@@ -63,6 +67,9 @@ public class MapperRegistry {
     return knownMappers.containsKey(type);
   }
 
+  /**
+   * 根据 Mapper 的 class 对象创建 MapperProxyFactory 对象
+   */
   public <T> void addMapper(Class<T> type) {
     // 接口
     if (type.isInterface()) {
@@ -72,7 +79,7 @@ public class MapperRegistry {
       }
       boolean loadCompleted = false;
       try {
-        // 添加到 knownMappers 中
+        // 添加到 knownMappers 中, 根据 Mapper 的 class 对象创建工厂代理对象
         knownMappers.put(type, new MapperProxyFactory<>(type));
         // It's important that the type is added before the parser is run
         // otherwise the binding may automatically be attempted by the

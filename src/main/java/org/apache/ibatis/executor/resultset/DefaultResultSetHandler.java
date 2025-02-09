@@ -192,13 +192,15 @@ public class DefaultResultSetHandler implements ResultSetHandler {
     final List<Object> multipleResults = new ArrayList<>();
 
     int resultSetCount = 0;
+    // 1. 获取 ResultSet 对象, 并将 ResultSet 包装为 ResultSetWrapper(可以获取表字段名称 字段对应的TypeHandler)
     ResultSetWrapper rsw = getFirstResultSet(stmt);
-
+    // 2. 获取 ResultMap(Mapper SQL配置, 一条语句对应一个ResultMap)
     List<ResultMap> resultMaps = mappedStatement.getResultMaps();
     int resultMapCount = resultMaps.size();
     validateResultMapsCount(rsw, resultMapCount);
     while (rsw != null && resultMapCount > resultSetCount) {
       ResultMap resultMap = resultMaps.get(resultSetCount);
+      // 3. 调用 handleResultSet 方法处理结果集, 将生成的实体存放在 multipleResults 列表中
       handleResultSet(rsw, resultMap, multipleResults, null);
       rsw = getNextResultSet(stmt);
       cleanUpAfterHandlingResultSet();

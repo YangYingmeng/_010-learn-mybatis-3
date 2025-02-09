@@ -95,7 +95,7 @@ public final class TypeHandlerRegistry {
 
   /**
    * The constructor that pass the MyBatis configuration.
-   *
+   * 建立 JAVA 类型与 ypeHandler 类型的映射
    * @param configuration
    *          a MyBatis configuration
    *

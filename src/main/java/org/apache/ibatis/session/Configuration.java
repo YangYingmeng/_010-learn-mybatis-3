@@ -106,19 +106,25 @@ public class Configuration {
 
   protected boolean safeRowBoundsEnabled;
   protected boolean safeResultHandlerEnabled = true;
+  // 是否开启自动驼峰命名规则
   protected boolean mapUnderscoreToCamelCase;
   protected boolean aggressiveLazyLoading;
+  // 允许JDBC支持自动生成主键
   protected boolean useGeneratedKeys;
   protected boolean useColumnLabel = true;
+  // 是否开启Mapper缓存, 二级缓存
   protected boolean cacheEnabled = true;
   protected boolean callSettersOnNulls;
   protected boolean useActualParamName = true;
+  // 返回列都为空时, MyBatis默认返回null, 开启则返回空实例
   protected boolean returnInstanceForEmptyRow;
   protected boolean shrinkWhitespacesInSql;
   protected boolean nullableOnForEach;
   protected boolean argNameBasedConstructorAutoMapping;
 
+  // 指定MyBatis 打印日志的前缀
   protected String logPrefix;
+  // 指定日志的具体实现
   protected Class<? extends Log> logImpl;
   protected Class<? extends VFS> vfsImpl;
   protected Class<?> defaultSqlProviderType;
@@ -126,11 +132,16 @@ public class Configuration {
   protected JdbcType jdbcTypeForNull = JdbcType.OTHER;
   protected Set<String> lazyLoadTriggerMethods = new HashSet<>(
       Arrays.asList("equals", "clone", "hashCode", "toString"));
+  // 设置超时时间, 即驱动等待数据库响应的事件
   protected Integer defaultStatementTimeout;
+  // 限制数据库获取数据的最大行数
   protected Integer defaultFetchSize;
   protected ResultSetType defaultResultSetType;
+  // 配置默认的Executor类型
   protected ExecutorType defaultExecutorType = ExecutorType.SIMPLE;
+  // 制定MyBatis应该如何自动映射列到Java实体属性, 默认自动映射但不映射复杂的结果集
   protected AutoMappingBehavior autoMappingBehavior = AutoMappingBehavior.PARTIAL;
+  // 指定发现自动映射目标未知列的行为
   protected AutoMappingUnknownColumnBehavior autoMappingUnknownColumnBehavior = AutoMappingUnknownColumnBehavior.NONE;
 
   protected Properties variables = new Properties();
@@ -138,6 +149,7 @@ public class Configuration {
   protected ObjectFactory objectFactory = new DefaultObjectFactory();
   protected ObjectWrapperFactory objectWrapperFactory = new DefaultObjectWrapperFactory();
 
+  // 是否延迟加载
   protected boolean lazyLoadingEnabled;
   protected ProxyFactory proxyFactory = new JavassistProxyFactory(); // #224 Using internal Javassist instead of OGNL
 
@@ -149,12 +161,17 @@ public class Configuration {
    */
   protected Class<?> configurationFactory;
 
+  // **** 作为容器存放 TypeHandler TypeAlias Mapper接口及Mapper SQL配置信息 ****
+  // 注册Mapper接口信息, 建立Mapper接口的 Class 对象和 MapperProxyFactory 对象之间的关系
   protected final MapperRegistry mapperRegistry = new MapperRegistry(this);
+  // 注册 MyBatis 插件信息, 实际上是一个拦截器
   protected final InterceptorChain interceptorChain = new InterceptorChain();
   protected final TypeHandlerRegistry typeHandlerRegistry = new TypeHandlerRegistry(this);
   protected final TypeAliasRegistry typeAliasRegistry = new TypeAliasRegistry();
   protected final LanguageDriverRegistry languageRegistry = new LanguageDriverRegistry();
 
+  // key为sql对应的id 如果是通过 XML 配置, key 则为 命名空间 + 标签的id
+  // 注解配置SQL 则为 完全限定名 + 方法名称
   protected final Map<String, MappedStatement> mappedStatements = new StrictMap<MappedStatement>(
       "Mapped Statements collection")
           .conflictMessageProducer((savedValue, targetValue) -> ". please check " + savedValue.getResource() + " and "
@@ -711,6 +728,7 @@ public class Configuration {
     return MetaObject.forObject(object, objectFactory, objectWrapperFactory, reflectorFactory);
   }
 
+  // ParameterHandler 组件工厂方法
   public ParameterHandler newParameterHandler(MappedStatement mappedStatement, Object parameterObject,
       BoundSql boundSql) {
     ParameterHandler parameterHandler = mappedStatement.getLang().createParameterHandler(mappedStatement,
@@ -718,6 +736,7 @@ public class Configuration {
     return (ParameterHandler) interceptorChain.pluginAll(parameterHandler);
   }
 
+  // ResultSetHandler 组件工厂方法
   public ResultSetHandler newResultSetHandler(Executor executor, MappedStatement mappedStatement, RowBounds rowBounds,
       ParameterHandler parameterHandler, ResultHandler resultHandler, BoundSql boundSql) {
     ResultSetHandler resultSetHandler = new DefaultResultSetHandler(executor, mappedStatement, parameterHandler,
@@ -725,6 +744,7 @@ public class Configuration {
     return (ResultSetHandler) interceptorChain.pluginAll(resultSetHandler);
   }
 
+  // StatementHandler 组件工厂方法
   public StatementHandler newStatementHandler(Executor executor, MappedStatement mappedStatement,
       Object parameterObject, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) {
     StatementHandler statementHandler = new RoutingStatementHandler(executor, mappedStatement, parameterObject,
@@ -732,6 +752,7 @@ public class Configuration {
     return (StatementHandler) interceptorChain.pluginAll(statementHandler);
   }
 
+  // Executor 组件工厂方法
   public Executor newExecutor(Transaction transaction) {
     return newExecutor(transaction, defaultExecutorType);
   }
@@ -948,6 +969,7 @@ public class Configuration {
   }
 
   public <T> T getMapper(Class<T> type, SqlSession sqlSession) {
+    // 通过 mapperRegistry 注册 MapperProxyFactory, 通过 MapperProxyFactory 获取 MapperProxy
     return mapperRegistry.getMapper(type, sqlSession);
   }
 

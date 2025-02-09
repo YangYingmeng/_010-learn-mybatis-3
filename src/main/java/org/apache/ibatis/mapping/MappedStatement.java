@@ -33,6 +33,7 @@ import org.apache.ibatis.session.Configuration;
  */
 public final class MappedStatement {
 
+  // 通过下述属性保存 select|update|insert|delete 包括注解 配置的 SQL 信息
   private String resource;
   private Configuration configuration;
   private String id;

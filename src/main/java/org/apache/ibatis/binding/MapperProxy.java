@@ -31,6 +31,8 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.util.MapUtil;
 
 /**
+ * getMapper 返回的代理类 由代理工厂管理(JDK动态代理)
+ *
  * @author Clinton Begin
  * @author Eduardo Macarron
  */
@@ -89,16 +91,23 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     try {
-      // 如果是 Object 定义的方法, 直接调用
+      // 如果是 Object类继承的方法, 直接调用
       if (Object.class.equals(method.getDeclaringClass())) {
         return method.invoke(this, args);
       }
+      // 对 Mapper 接口定义的方法进行封装, 生成 MapperMethod 对象, MapperMethod 的 invoke方法最终调用的是 MapperMethod#execute()
       return cachedInvoker(method).invoke(proxy, method, args, sqlSession);
     } catch (Throwable t) {
       throw ExceptionUtil.unwrapThrowable(t);
     }
   }
 
+  /**
+   * 对 MapperMethod 进行缓存, 缓存中不存在创建 MapperMethod 对象然后添加到缓存中(享元思想)
+   * @param method
+   * @return
+   * @throws Throwable
+   */
   private MapperMethodInvoker cachedInvoker(Method method) throws Throwable {
     try {
       return MapUtil.computeIfAbsent(methodCache, method, m -> {

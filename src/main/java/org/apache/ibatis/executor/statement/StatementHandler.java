@@ -30,20 +30,38 @@ import org.apache.ibatis.session.ResultHandler;
  */
 public interface StatementHandler {
 
+  /**
+   * 创建 JDBC Statement 对象, 并完成 Statement对象的属性设置
+   */
   Statement prepare(Connection connection, Integer transactionTimeout) throws SQLException;
 
+  /**
+   * 使用 ParameterHandler 替参数占位符设置值
+   */
   void parameterize(Statement statement) throws SQLException;
 
+  /**
+   * 将 SQL 命令添加到批处量执行列表中
+   */
   void batch(Statement statement) throws SQLException;
 
   int update(Statement statement) throws SQLException;
 
   <E> List<E> query(Statement statement, ResultHandler resultHandler) throws SQLException;
 
+  /**
+   * 带 游标 的查询
+   */
   <E> Cursor<E> queryCursor(Statement statement) throws SQLException;
 
+  /**
+   * 获取 Mapper 中配置的 SQL 信息
+   */
   BoundSql getBoundSql();
 
+  /**
+   * 获取 ParameterHandler 实例
+   */
   ParameterHandler getParameterHandler();
 
 }

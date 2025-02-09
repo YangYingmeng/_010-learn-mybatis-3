@@ -16,6 +16,8 @@
 package org.apache.ibatis.session;
 
 /**
+ * 可以通过该对象实现 内存分页, 不依赖 sql的 limit offset
+ *
  * @author Clinton Begin
  */
 public class RowBounds {

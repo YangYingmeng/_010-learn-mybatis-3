@@ -44,6 +44,7 @@ public class DefaultSqlSessionFactory implements SqlSessionFactory {
 
   @Override
   public SqlSession openSession() {
+    // 创建 SqlSession 实例
     return openSessionFromDataSource(configuration.getDefaultExecutorType(), null, false);
   }
 
@@ -95,10 +96,15 @@ public class DefaultSqlSessionFactory implements SqlSessionFactory {
       boolean autoCommit) {
     Transaction tx = null;
     try {
+      // 获取主配置文件配置的环境信息
       final Environment environment = configuration.getEnvironment();
+      // 创建事务管理器工厂
       final TransactionFactory transactionFactory = getTransactionFactoryFromEnvironment(environment);
+      // 从工厂中创建事务管理器
       tx = transactionFactory.newTransaction(environment.getDataSource(), level, autoCommit);
+      // 创建配置文件中指定的 Executor 类型对应的实例
       final Executor executor = configuration.newExecutor(tx, execType);
+      // 创建 DefaultSqlSession 实例, 多态
       return createSqlSession(configuration, executor, autoCommit);
     } catch (Exception e) {
       closeTransaction(tx); // may have fetched a connection so lets call close()

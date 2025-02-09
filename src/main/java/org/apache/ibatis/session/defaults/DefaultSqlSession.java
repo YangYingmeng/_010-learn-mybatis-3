@@ -149,8 +149,12 @@ public class DefaultSqlSession implements SqlSession {
 
   private <E> List<E> selectList(String statement, Object parameter, RowBounds rowBounds, ResultHandler handler) {
     try {
+      // 根据 Mapper 的 Id 获取对应的 MappedStatement
       MappedStatement ms = configuration.getMappedStatement(statement);
+      // 是否是一个脏读, 导致数据库和mybatis的缓存不一致; 如果该查询的条件是动态的如 #{param} 则查询的结果集不放入缓存
+      // 此处缓存有一二级之分, 如果不开启二级缓存 带有占位符不会走缓存, 如果用<cache>标签开启二级缓存, 则会将结果放入二级缓存
       dirty |= ms.isDirtySelect();
+      // 执行查询语句
       return executor.query(ms, wrapCollection(parameter), rowBounds, handler);
     } catch (Exception e) {
       throw ExceptionFactory.wrapException("Error querying database.  Cause: " + e, e);

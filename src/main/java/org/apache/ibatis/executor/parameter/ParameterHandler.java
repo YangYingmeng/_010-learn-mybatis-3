@@ -25,8 +25,14 @@ import java.sql.SQLException;
  */
 public interface ParameterHandler {
 
+  /**
+   * 获取执行Mapper时传入的参数对象
+   */
   Object getParameterObject();
 
+  /**
+   * 为占位符设置值
+   */
   void setParameters(PreparedStatement ps) throws SQLException;
 
 }

@@ -121,24 +121,20 @@ public class XMLConfigBuilder extends BaseBuilder {
   }
 
   public Configuration parse() {
-    // 防止重复解析
+    // 防止 parse() 被同一个实例多次调用
     if (parsed) {
       throw new BuilderException("Each XMLConfigBuilder can only be used once.");
     }
-    /**
-     * 标记为已解析
-     */
+    // 标记为已解析
     parsed = true;
-    /**
-     * 解析 xml Configuration 节点
-     */
+    // 调用 evalNode 创建表示 configuration 节点的 XNode 对象
+    // 调用 parseConfiguration 方法对 XNode 进行处理
     parseConfiguration(parser.evalNode("/configuration"));
     return configuration;
   }
 
   private void parseConfiguration(XNode root) {
     try {
-      // issue #117 read properties first
       // 解析 properties 标签
       propertiesElement(root.evalNode("properties"));
       // 解析 settings 标签
@@ -484,7 +480,7 @@ public class XMLConfigBuilder extends BaseBuilder {
     }
     // 遍历子节点
     for (XNode child : context.getChildren()) {
-      // 如果是 package 标签, 扫描该包
+      // 通过 package 标签指定包名
       if ("package".equals(child.getName())) {
         // 获取包名
         String mapperPackage = child.getStringAttribute("name");
@@ -492,7 +488,7 @@ public class XMLConfigBuilder extends BaseBuilder {
         configuration.addMappers(mapperPackage);
         // 如果是mapper标签
       } else {
-        // 获得 resource url class
+        // 获得 resource 属性指定 XML 文件路径
         String resource = child.getStringAttribute("resource");
         String url = child.getStringAttribute("url");
         String mapperClass = child.getStringAttribute("class");

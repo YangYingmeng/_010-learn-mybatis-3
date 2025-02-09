@@ -46,6 +46,7 @@ import org.apache.ibatis.type.TypeHandlerRegistry;
 
 /**
  * @author Clinton Begin
+ * 模板方法模式, 定义了方法的执行流程以及通用的处理逻辑
  */
 public abstract class BaseExecutor implements Executor {
 
@@ -132,6 +133,7 @@ public abstract class BaseExecutor implements Executor {
   @Override
   public <E> List<E> query(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler)
       throws SQLException {
+    // 获取 BoundSql 对象, BoundSql 是对动态sql解析生成的SQL语句和参数映射信息的封装
     BoundSql boundSql = ms.getBoundSql(parameter);
     CacheKey key = createCacheKey(ms, parameter, rowBounds, boundSql);
     return query(ms, parameter, rowBounds, resultHandler, key, boundSql);

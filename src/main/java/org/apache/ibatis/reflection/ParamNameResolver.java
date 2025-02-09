@@ -62,27 +62,35 @@ public class ParamNameResolver {
 
   private boolean hasParamAnnotation;
 
+  /**
+   * 完成 Mapper 方法参数的解析过程
+   */
   public ParamNameResolver(Configuration config, Method method) {
     this.useActualParamName = config.isUseActualParamName();
     final Class<?>[] paramTypes = method.getParameterTypes();
+    // 获取方法的所有参数注解
     final Annotation[][] paramAnnotations = method.getParameterAnnotations();
     final SortedMap<Integer, String> map = new TreeMap<>();
     int paramCount = paramAnnotations.length;
     // get names from @Param annotations
+    // 遍历获取 @Param 注解
     for (int paramIndex = 0; paramIndex < paramCount; paramIndex++) {
       if (isSpecialParameter(paramTypes[paramIndex])) {
         // skip special parameters
         continue;
       }
       String name = null;
+      // 参数有多个注解 判断是否存在 @Param 注解
       for (Annotation annotation : paramAnnotations[paramIndex]) {
         if (annotation instanceof Param) {
           hasParamAnnotation = true;
+          // 获取 参数名称
           name = ((Param) annotation).value();
           break;
         }
       }
       if (name == null) {
+        // 如果没有该注解 通过 useActualParamName 属性判断是否使用实际参数的名称
         // @Param was not specified.
         if (useActualParamName) {
           name = getActualParamName(method, paramIndex);
@@ -93,8 +101,10 @@ public class ParamNameResolver {
           name = String.valueOf(map.size());
         }
       }
+      // 以参数的位置为索引存放参数名
       map.put(paramIndex, name);
     }
+    // 将map转为不可修改的SortedMap的视图
     names = Collections.unmodifiableSortedMap(map);
   }
 

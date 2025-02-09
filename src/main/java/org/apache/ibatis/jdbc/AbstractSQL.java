@@ -34,6 +34,9 @@ public abstract class AbstractSQL<T> {
   private static final String AND = ") \nAND (";
   private static final String OR = ") \nOR (";
 
+  /**
+   * SQL的描述, 注意其中的sql()
+   */
   private final SQLStatement sql = new SQLStatement();
 
   public abstract T getSelf();
@@ -593,6 +596,10 @@ public abstract class AbstractSQL<T> {
     return self;
   }
 
+  /**
+   * 重写 toString方法, 调用SqlStatement#sql()方法, 形成sql语句
+   * @return
+   */
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
@@ -757,6 +764,7 @@ public abstract class AbstractSQL<T> {
     }
 
     private String deleteSQL(SafeAppendable builder) {
+      // 拼接sql
       sqlClause(builder, "DELETE FROM", tables, "", "", "");
       sqlClause(builder, "WHERE", where, "(", ")", " AND ");
       limitingRowsStrategy.appendClause(builder, null, limit);
@@ -772,6 +780,9 @@ public abstract class AbstractSQL<T> {
       return builder.toString();
     }
 
+    /**
+     * 拼接sql
+     */
     public String sql(Appendable a) {
       SafeAppendable builder = new SafeAppendable(a);
       if (statementType == null) {
@@ -779,7 +790,7 @@ public abstract class AbstractSQL<T> {
       }
 
       String answer;
-
+      // 根据类型判断执行什么类型的sql
       switch (statementType) {
         case DELETE:
           answer = deleteSQL(builder);
